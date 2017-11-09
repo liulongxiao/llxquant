@@ -32,14 +32,3 @@ class Time_manager_session(Session):
     def set_time(self, current_time):
         self.time_manager.set_current_time(current_time)
 
-
-        # def __enter__(self,current_time=None):
-        #     super(Time_manager_session,self).__enter__()
-        #     if current_time is None:
-        #         raise NotImplemented('havent implemented None current time')
-        #     else:
-        #         self.time_manager.set_current_time(current_time)
-        #
-        # def __exit__(self, exc_type, exc_val, exc_tb):
-        #     super(Time_manager_session, self).__exit__(self, exc_type, exc_val, exc_tb)
-        #     self.time_manager.set_current_time(None)

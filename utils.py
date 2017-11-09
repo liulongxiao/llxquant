@@ -1,4 +1,6 @@
-from .env import GLOBAL_SESSION
+from datetime import date,datetime
+from llxquant.env import GLOBAL_SESSION
+from llxquant.cons import DATE_FMT
 def set_global_session(sess):
     GLOBAL_SESSION.set_session(sess)
 
@@ -26,3 +28,15 @@ def max_drop_down(serial):
             drop_length=i-peak_index
 
     return mdd,drop_length
+
+
+def try_to_parse_date(instance):
+    if isinstance(instance,str):
+        return datetime.strptime(instance,DATE_FMT).date()
+    if isinstance(instance,datetime):
+        return instance.date()
+    if hasattr(instance,date):
+        parsed_date=instance.date()
+        if isinstance(parsed_date,date):
+            return parsed_date
+    raise TypeError('cannot convert instance to date type ')

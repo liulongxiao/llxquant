@@ -1,5 +1,7 @@
 from llxquant.errors import EMPTY_GLOBAL_SESSION_ERROR
+from datetime import date
 
+CARLENDER_DAILY_TYPE=date
 
 
 class GLOBAL_SESSION:

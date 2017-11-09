@@ -4,6 +4,15 @@ from llxquant.time_manager import Time_manager_session,Time_manager
 from collections import OrderedDict
 from llxquant.log import Logger
 from llxquant.graph import plot_charts_with_market_value
+from llxquant.assets import stock,cash,asset
+from llxquant.position import position
+from llxquant.engines import  market_engine,stock_engine,asset_engine_map
+from collections import OrderedDict
+from llxquant.carlender import carlender_daily
+from llxquant.orders import generate_orders_from_positions
+from copy import deepcopy
+
+
 def merge_dict(dict1,dict2):
     result=OrderedDict()
     for k,v in dict1.items():
@@ -61,12 +70,6 @@ class back_test(session_based):
     def generate_position_percent(self):
         """"this method should written by user to implement stratege"""
         pass
-
-
-    # def generate_positions_percent(self):
-    #     for trade_date in self.actual_trade_carlender:
-    #         self.session.set_time(trade_date)
-    #         self.positions_percent[trade_date]=self.generate_position_percent()
 
 
     def generate_position(self,position_percent,market_value,last_position,thetime=None):
@@ -164,10 +167,74 @@ class back_test(session_based):
         plot_charts_with_market_value(market_values=market_value)
 
 
+class BackTest(session_based):
+    def __init__(self,carlender, asset_field=[stock],initial_capital=1000000, tax_rate_and_commission=0.002):
+        """warning! carlender must be sorted"""
+        session = Time_manager_session(Time_manager(carlender=carlender))
+        super(BackTest, self).__init__(session)
+        self.carlender=carlender
+        self.session.set_time(carlender.fist_time())
+        with self.session.as_default():
+            self.current_pisition=position(init_cash=initial_capital)
+            self.market_engine=market_engine()
+            for asset_type in asset_field:
+                self.market_engine.set_engine(asset_type,asset_engine_map[asset_type]())
+            self.pre_load()
+        self.position_log=OrderedDict()
+        self.market_value=OrderedDict()
+
+    def pre_load(self):
+        """method to be overwrite to preload data or feature """
+        raise  NotImplemented()
+
+
+    def generate_trade_carlender(self):
+        """method to be overwrite to generate the actual trade carlender (days that contain orders)"""
+        self.trade_carlender=self.carlender
+
+    def generate_position_percent(self):
+        """"this method should written by user to implement stratege"""
+        raise NotImplemented()
+
+
+    def _generate_position_percent(self):
+        target_position_percent=self.generate_position_percent()
+        for key in target_position_percent.keys():
+            assert  isinstance(key,asset)
+        return target_position_percent
+
+    def load_engine_pricing_data(self,datasource):
+        with self.session.as_default():
+            for engine in self.market_engine.asset_engine_dict.values():
+                engine.load_marketing_data(datasource[engine.asset_type])
+
+    def generate_position(self):
+        target_position_percent=self._generate_position_percent()
+        target_position=self.market_engine.to_target_percent(self.current_pisition,target_position_percent)
+        return target_position
 
 
 
+    def back_test(self):
+        with self.session.as_default():
+            for current_time in self.trade_carlender:
+                """use tmp to catch internal positions"""
+                tmp_position=deepcopy(self.current_pisition)
+
+                self.session.set_time(current_time)
+                target_position=self.generate_position()
+                orders_to_apply=generate_orders_from_positions(older_position=self.current_pisition,new_position=target_position)
+                for order in orders_to_apply:
+                    self.current_pisition.check_order(order)
+                    tmp_position=self.market_engine.apply_order(order,tmp_position)
+                self.position_log[current_time]=tmp_position
+                self.current_pisition=tmp_position
 
 
+if __name__=='__main__':
+    class my_test(BackTest):
+        def generate_position_percent(self):
+            return """Asset(stockId):percent """
 
-
+    test=my_test(initial_capital=100)
+    test.back_test()

@@ -1,8 +1,9 @@
 from abc import ABC,abstractmethod
 from llxquant.session import  session_based
 from llxquant.errors import  ENGINE_NOT_FOUND_ERROR
-from llxquant.assets import  asset,stock
+from llxquant.assets import  asset,stock,cash
 from llxquant.cons import *
+from collections import OrderedDict
 import numpy as np
 from copy import deepcopy
 
@@ -38,6 +39,7 @@ class asset_engine(session_based,ABC):
 class stock_engine(asset_engine):
     def __init__(self,session=None):
         super(stock_engine,self).__init__(stock,session)
+
 
     def load_marketing_data(self,pricing_data_dict):
         """pricing_data_dict should be a session_based data object"""
@@ -91,6 +93,30 @@ class market_engine(session_based):
         for asset,amount in position.items():
             market_value+=self.find_engine(asset.asset_type).calculate_market_value(asset)
         return market_value
+
+    def asset_pricing(self,asset_instance):
+        engine_to_apply = self.find_engine(asset_instance.asset_type)
+        return getattr(engine_to_apply,PRICE).get_data(asset_instance)
+
+    def max_amout_can_ask(self,asset_instance,position):
+        pass
+
+    def max_amount_can_bid(self,asset_instance,position):
+        pass
+
+    def to_target_percent(self,position,target_percent_position):
+        target_position=OrderedDict()
+        market_value=self.calculate_market_value(position)
+        for k,v in target_percent_position:
+            if isinstance(k,cash):
+                cash_=k
+                continue
+            target_position[k]=(v*market_value)//self.asset_pricing(k)
+        target_position[cash_]=market_value-self.calculate_market_value(target_position)
+        return target_position
+
+
+asset_engine_map={stock:stock_engine}
 
 
 
