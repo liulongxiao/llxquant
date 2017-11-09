@@ -165,6 +165,16 @@ class back_test(session_based):
 
 
 
+class back_test_v2(session_based):
+    """
+    every back test owns it's own session,initialize it's asset types, basic_cash,
+
+    """
+    def __init__(self,asset_fileds=None,basic_cash_id='cny',):
+        pass
+
+
+
 
 
 
