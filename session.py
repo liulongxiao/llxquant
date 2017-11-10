@@ -25,4 +25,7 @@ class Session(context_manager):
     def __exit__(self, exc_type, exc_val, exc_tb):
         relese_global_session(self)
 
+    def as_default(self):
+        return self
+
 

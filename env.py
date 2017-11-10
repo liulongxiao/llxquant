@@ -1,13 +1,18 @@
 from llxquant.errors import EMPTY_GLOBAL_SESSION_ERROR
+from datetime import date
 
+CARLENDER_DAILY_TYPE=date
 
 
 class GLOBAL_SESSION:
     sessions=list()
     @classmethod
-    def release_session(cls):
+    def release_session(cls,sess):
         if len(cls.sessions)>0:
-            cls.sessions.pop()
+            if sess==cls.sessions[-1]:
+                cls.sessions.pop()
+            else:
+                raise ValueError('session corrupt')
         else:
             raise EMPTY_GLOBAL_SESSION_ERROR('global sessions list is empty')
 

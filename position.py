@@ -37,7 +37,6 @@ class position(dict):
 
     def add_asset(self,asset_instance,amount):
         assert  amount>0
-        assert  isinstance(amount,int)
         if asset_instance in self.keys():
             self[asset_instance]+=amount
         else:
@@ -54,12 +53,4 @@ class position(dict):
 
 if __name__=='__main__':
     from llxquant.assets import stock
-    from llxquant.matched_trading import order
 
-    my_pos=position(init_cash=1000000)
-    stockI=stock('600233')
-    test_order = order(stock('600233'),-100,ASK)
-    my_pos.add_cash(3)
-    my_pos.add_asset(stockI,100)
-    my_pos.reduce_asset(stockI,10)
-    my_pos.check_order(test_order)
