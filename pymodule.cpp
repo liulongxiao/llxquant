@@ -64,25 +64,25 @@ static PyObject * readFields_column_min_zero_copy(PyObject * self,PyObject * arg
 
 
 
-static PyMethodDef JsmmapMethods[] = {
+static PyMethodDef TtreaderMethods[] = {
         {"readFields_column_min_zero_copy",readFields_column_min_zero_copy,METH_VARARGS,"readFields_column_min_zero_copy"},
         {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-static struct PyModuleDef Jsmmapmodule = {
+static struct PyModuleDef Ttreadermodule = {
         PyModuleDef_HEAD_INIT,
         "ttreader",   /* name of module */
         NULL, /* module documentation, may be NULL */
         -1,       /* size of per-interpreter state of the module,
                  or -1 if the module keeps state in global variables. */
-        JsmmapMethods
+        TtreaderMethods
 };
 
 
 PyMODINIT_FUNC PyInit_Ttreader(void) {
     PyObject *m;
 
-    m = PyModule_Create(&Jsmmapmodule);
+    m = PyModule_Create(&Ttreadermodule);
     if (m == NULL)
         return NULL;
 
